@@ -23,7 +23,7 @@ public class KafkaProducerService : IHostedService
 	{
 		for (var i =0; i < 20; i++)
 		{
-			var value = $"Hello World {i}";
+			var value = $"Producing: Hello World {i}";
 			_logger.LogInformation(value);
 			await _producer.ProduceAsync(
 				"demo", 
