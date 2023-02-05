@@ -1,41 +1,48 @@
 using System.Text;
-using Kafka.Public;
-using Kafka.Public.Loggers;
+using Bogus;
+using Confluent.Kafka;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace KafkaNet.Services;
 
-public class KafkaConsumerService : IHostedService
+public class KafkaConsumerService : BackgroundService
 {
 	private readonly ILogger<KafkaProducerService> _logger;
-	private readonly ClusterClient _cluster;
+	private readonly ConsumerConfig _consumerConfig;
+	private readonly string _name;
 
 	public KafkaConsumerService(ILogger<KafkaProducerService> logger)
 	{
 		_logger = logger;
-		_cluster = new ClusterClient(new Configuration()
+		_consumerConfig = new ConsumerConfig
 		{
-			Seeds = "localhost:9092"
-		}, new ConsoleLogger());
-	}
-
-
-	public Task StartAsync(CancellationToken cancellationToken)
-	{
-		_cluster.ConsumeFromLatest("demo");
-		_cluster.MessageReceived += record =>
-		{
-			_logger.LogInformation(
-				$" <<<<<<<<<<<<<<<< Consuming: {Encoding.UTF8.GetString(record.Value as byte[] ?? 
-				                                                        Array.Empty<byte>())}");
+			BootstrapServers = "localhost:9092",
+			GroupId = "consumer-group-1",
+			AutoOffsetReset = AutoOffsetReset.Earliest
 		};
-		return Task.CompletedTask;
+		_name = new Faker().Name.FirstName();
 	}
 
-	public Task StopAsync(CancellationToken cancellationToken)
+
+	protected override Task ExecuteAsync(CancellationToken cancellationToken)
 	{
-		_cluster.Dispose();
+		Task.Run( () =>
+		{
+			using(var consumer = new ConsumerBuilder<Ignore, string>(_consumerConfig).Build())
+			{
+				consumer.Subscribe("demo");
+
+				while(!cancellationToken.IsCancellationRequested)
+				{
+					var consumeResult = consumer.Consume(cancellationToken);
+					_logger.LogInformation(
+						$" <<<<<<<<<<<<<<<< {_name} Consumer: {consumeResult.Message.Value}");
+				}
+				consumer.Close();
+			}
+		}, cancellationToken);
+
 		return Task.CompletedTask;
 	}
 }

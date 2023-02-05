@@ -9,9 +9,10 @@ Console.WriteLine("Hello, World!");
 var host = Host.CreateDefaultBuilder(args)
 	.ConfigureServices((context, collection) =>
 	{
+		collection.AddHostedService<KafkaConsumerService>();
 		collection.AddHostedService<KafkaProducerService>();
 		collection.AddHostedService<KafkaProducerBackgroundService>();
-		collection.AddHostedService<KafkaConsumerService>();
+		
 	})
 	.Build();
 
