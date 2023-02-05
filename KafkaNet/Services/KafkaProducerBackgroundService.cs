@@ -5,14 +5,14 @@ using Microsoft.Extensions.Logging;
 
 namespace KafkaNet.Services;
 
-public class KafkaProducerService : IHostedService
+public class KafkaProducerBackgroundService : BackgroundService
 {
 	private readonly ILogger<KafkaProducerService> _logger;
 	private readonly IProducer<Null, string> _producer;
 	private readonly string _name;
 	private readonly Random _random;
-
-	public KafkaProducerService(ILogger<KafkaProducerService> logger)
+	
+	public KafkaProducerBackgroundService(ILogger<KafkaProducerService> logger)
 	{
 		_logger = logger;
 		var config = new ProducerConfig()
@@ -24,7 +24,7 @@ public class KafkaProducerService : IHostedService
 		_random = new Random();
 	}
 	
-	public Task StartAsync(CancellationToken cancellationToken)
+	protected override Task ExecuteAsync(CancellationToken cancellationToken)
 	{
 		Task.Run(async () =>
 		{
@@ -44,12 +44,6 @@ public class KafkaProducerService : IHostedService
 			_producer.Flush(TimeSpan.FromSeconds(10));
 		}, cancellationToken);
 		
-		return Task.CompletedTask;
-	}
-
-	public Task StopAsync(CancellationToken cancellationToken)
-	{
-		_producer.Dispose();
 		return Task.CompletedTask;
 	}
 }
