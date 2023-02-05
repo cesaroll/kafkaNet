@@ -1,3 +1,4 @@
+using Bogus;
 using Confluent.Kafka;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -8,6 +9,8 @@ public class KafkaProducerService : IHostedService
 {
 	private readonly ILogger<KafkaProducerService> _logger;
 	private readonly IProducer<Null, string> _producer;
+	private readonly string _name;
+	private readonly Random _random;
 
 	public KafkaProducerService(ILogger<KafkaProducerService> logger)
 	{
@@ -17,22 +20,31 @@ public class KafkaProducerService : IHostedService
 			BootstrapServers = "localhost:9092"
 		};
 		_producer = new ProducerBuilder<Null, string>(config).Build();
+		_name = new Faker().Name.FirstName();
+		_random = new Random();
 	}
 	
-	public async Task StartAsync(CancellationToken cancellationToken)
+	public Task StartAsync(CancellationToken cancellationToken)
 	{
-		for (var i =0; i < 20; i++)
+		Task.Run(async () =>
 		{
-			var value = $"Producing: Hello World {i}";
-			_logger.LogInformation(value);
-			await _producer.ProduceAsync(
-				"demo", 
-				new Message<Null, string> { Value = value },
-				cancellationToken);
-			await Task.Delay(1000, cancellationToken);
-		}
+			var i = 0;
+			while (!cancellationToken.IsCancellationRequested)
+			{
+				var value = $"{_name} producer. {i} - {DateTime.UtcNow.ToString("T")}";
+				_logger.LogInformation($"######### -> {value}");
+				await _producer.ProduceAsync(
+					"demo", 
+					new Message<Null, string> { Value = value },
+					cancellationToken);
+				await Task.Delay(_random.Next(1000, 10000), cancellationToken);
+				i++;
+			}
 
-		_producer.Flush(TimeSpan.FromSeconds(10));
+			_producer.Flush(TimeSpan.FromSeconds(10));
+		});
+		
+		return Task.CompletedTask;
 	}
 
 	public Task StopAsync(CancellationToken cancellationToken)

@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Bogus" Version="34.0.2" />
     <PackageReference Include="Confluent.Kafka" Version="2.0.2" />
     <PackageReference Include="kafka-sharp" Version="1.4.3" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />

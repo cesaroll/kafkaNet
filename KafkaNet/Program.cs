@@ -1,4 +1,5 @@
-﻿using KafkaNet.Services;
+﻿using Bogus;
+using KafkaNet.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,7 @@ var host = Host.CreateDefaultBuilder(args)
 	.ConfigureServices((context, collection) =>
 	{
 		collection.AddHostedService<KafkaConsumerService>();
+		collection.AddHostedService<KafkaProducerService>();
 		collection.AddHostedService<KafkaProducerService>();
 	})
 	.Build();

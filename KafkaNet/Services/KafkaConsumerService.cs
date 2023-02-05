@@ -26,7 +26,9 @@ public class KafkaConsumerService : IHostedService
 		_cluster.ConsumeFromLatest("demo");
 		_cluster.MessageReceived += record =>
 		{
-			_logger.LogInformation($"Consuming message: {Encoding.UTF8.GetString(record.Value as byte[] ?? Array.Empty<byte>())}");
+			_logger.LogInformation(
+				$" <<<<<<<<<<<<<<<< Consuming: {Encoding.UTF8.GetString(record.Value as byte[] ?? 
+				                                                        Array.Empty<byte>())}");
 		};
 		return Task.CompletedTask;
 	}
