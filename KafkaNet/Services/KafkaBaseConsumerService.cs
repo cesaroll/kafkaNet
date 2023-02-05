@@ -6,13 +6,13 @@ using Microsoft.Extensions.Logging;
 
 namespace KafkaNet.Services;
 
-public class KafkaConsumerService : BackgroundService
+public class KafkaBaseConsumerService : BackgroundService
 {
 	private readonly ILogger<KafkaProducerService> _logger;
 	private readonly ConsumerConfig _consumerConfig;
 	private readonly string _name;
 
-	public KafkaConsumerService(ILogger<KafkaProducerService> logger)
+	public KafkaBaseConsumerService(ILogger<KafkaProducerService> logger)
 	{
 		_logger = logger;
 		_consumerConfig = new ConsumerConfig
